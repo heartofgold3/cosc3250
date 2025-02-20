@@ -1,3 +1,11 @@
+/**
+ * COSC 3250 - Project 3
+ * a simple synchronous serial driver for the embedded operating system
+ * @authors MacKenna Bochnak and Dayane Gracia-Avila
+ * Instructor Dennis Brylow
+ * TA-BOT:MAILTO mackenna.bochnak@marquette.edu dayane.garcia-avila@marquette.edu
+ */
+
 #include <xinu.h>
 
 #define UNGETMAX 10             /* Can un-get at most 10 characters. */
@@ -9,11 +17,16 @@ syscall kgetc()
     volatile struct ns16550_uart_csreg *regptr;
     regptr = (struct ns16550_uart_csreg *)UART_BASE;
 
-    // TODO: First, check the unget buffer for a character.
-    //       Otherwise, check UART line status register, and
+    // TODO: First, check the unget buffer for a characregptr->thr = c; // send the characterter.
+    if (bufp > 0) {
+	    return ungetArray[--bufp];  // Retrieve the last ungotten character
+    }
+    
+    //       Otherwise, check UART line status register for available data
+    while (!(regptr->lsr & 0x01));  // Wait until data is available (LSR bit 0)
+    
     //       once there is data ready, get character c.
-
-    return SYSERR;
+    return regptr->rbr;
 }
 
 /**
@@ -26,8 +39,15 @@ syscall kcheckc(void)
     regptr = (struct ns16550_uart_csreg *)UART_BASE;
 
     // TODO: Check the unget buffer and the UART for characters.
+    if (bufp > 0) {
+	    return TRUE;  // There is a character available in the buffer
+    }
 
-	return SYSERR;
+    if (regptr->lsr & 0x01) {  // LSR bit 0 set means data is ready
+        return TRUE;
+    }
+
+	return FALSE;  // No character available
 }
 
 /**
@@ -38,8 +58,12 @@ syscall kcheckc(void)
 syscall kungetc(unsigned char c)
 {
     // TODO: Check for room in unget buffer, put the character in or discard.
-
-    return SYSERR;
+    if (bufp >= UNGETMAX) {
+        return SYSERR;  // Buffer is full, cannot unget more characters
+    }
+    ungetArray[bufp++] = c;
+    
+    return c; //return the character
 }
 
 syscall kputc(uchar c)
@@ -48,7 +72,10 @@ syscall kputc(uchar c)
     regptr = (struct ns16550_uart_csreg *)UART_BASE;
 
     // TODO: Check UART line status register.
+    while(!(regptr->lsr & 0x20)); // wait for transmitter holding register to be empty
+
     //       Once the Transmitter FIFO is empty, send character c.
+    regptr->thr = c; // send the character
 
     return c;
 }
