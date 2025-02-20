@@ -1,4 +1,4 @@
- #
+#
  # @file     ctxsw.s
  # @provides ctxsw
  #
@@ -9,6 +9,7 @@
  # Instructor Dennis Brylow
  # TA-BOT:MAILTO mackenna.bochnak@marquette.edu dayane.garcia-avila@marquette.edu
 
+
 #include <riscv.h>
 
 .text
@@ -16,23 +17,23 @@
 	.globl	ctxsw
 
 
-/**
- * @fn void ctxsw(&oldcontext, &newcontext)
- *
- * Switch context (values in registers) to another process, saving the
- * current processes information. This function will not return as normally
- * thought as it will load in the program counter for a different process and
- * jump to that location and begin executing code.
- *
- * @param  &oldcontext address of outgoing process context save area
- * @param  &newcontext address of incoming process context save area
- * @return special case -- see above
- */
+ #
+ # @fn void ctxsw(&oldcontext, &newcontext)
+ #
+ # Switch context (values in registers) to another process, saving the
+ # current processes information. This function will not return as normally
+ # thought as it will load in the program counter for a different process and
+ # jump to that location and begin executing code.
+ #
+ # @param  &oldcontext address of outgoing process context save area
+ # @param  &newcontext address of incoming process context save area
+ # @return special case -- see above
+
 	.func ctxsw
 ctxsw:
 
 // TODO: Save process state, including at least the 
-//	callee-save ("non-volatile") registers.
+//	 callee-save ("non-volatile") registers
 	//important to have because we need to make sure we have places to have temporary storage
   	mv t0, a0   //
         mv t1, a1   //
@@ -47,8 +48,8 @@ ctxsw:
         sd a5,  (CTX_A5*8)(t0)
         sd a6,  (CTX_A6*8)(t0)
         sd a7,  (CTX_A7*8)(t0)
-        sd ra,  (CTX_RA*8)(t0)  //Super important, needs to store our return address
-        sd sp,  (CTX_SP*8)(t0)  //Super important, needs to store our stack pointer, to know where we are
+        sd ra,  (CTX_RA*8)(t0)  //Super important, need to
+        sd sp,  (CTX_SP*8)(t0)  //Super important, needs to
 
 
         //important here because after the first 7 arguments are used, you'll utilize the s-registers (s0, s1, s2...)
@@ -65,14 +66,15 @@ ctxsw:
         sd s10, (CTX_S10*8)(t0)
         sd s11, (CTX_S11*8)(t0)
 
+
 // TODO: Switch from old process stack to new process stack.
 	ld sp,  CTX_SP*8(t1)    // Load new process stack pointer
 
 // TODO: Restore process state, including at least the
-//	callee-save ("non-volatile") registers.
-//	These call and restore segments must match the register data
-//	layout you choose in create().
-	ld a0,  (CTX_A0*8)(t1) //
+//	 callee-save ("non-volatile") registers.
+//	 These call and restore segments must match the register data
+//	 layout you choose in create().
+    	ld a0,  (CTX_A0*8)(t1) //
         ld a1,  (CTX_A1*8)(t1)
         ld a2,  (CTX_A2*8)(t1)
         ld a3,  (CTX_A3*8)(t1)
@@ -82,7 +84,7 @@ ctxsw:
         ld a7,  (CTX_A7*8)(t1)
         ld ra,  (CTX_RA*8)(t1) //important because it lets the program know to continue after the context switch
 
-        ld s0,  (CTX_S0*8)(t1) //everything below is loading the other possible arguments there are
+        ld s0,  (CTX_S0*8)(t1) //everything below is loading the
         ld s1,  (CTX_S1*8)(t1)
         ld s2,  (CTX_S2*8)(t1)
         ld s3,  (CTX_S3*8)(t1)
@@ -96,20 +98,19 @@ ctxsw:
         ld s11, (CTX_S11*8)(t1)
 
 // TODO: Jump to next function.
-//	Note: there are two important values at play here --
-//	the address of the process's function that we want to end up in
-//	once we leave this ctxsw(), and the value we want to have in the
-//	return address register.  Those are almost always the same value, except
-//	for the very first time we ctxsw() to a new process, when they
-//	are different.  See create() for more details.
-	ld sp,  (CTX_SP*8)(t1)  //making sure to reload the sp
-        ld t0,  (CTX_PC*8)(t1)  //then to our t0
+//	 Note: there are two important values at play here --
+//	 the address of the process's function that we want to end up in
+//	 once we leave this ctxsw(), and the value we want to have in the
+//	 return address register.  Those are almost always the same value, except
+//	 for the very first time we ctxsw() to a new process, when they
+//	 are different.  See create() for more details.
+    	ld sp,  (CTX_SP*8)(t1)  //making sure to reload the sp
+        ld t0,  (CTX_PC*8)(t1)  //making sure to
         jalr zero, t0           // jumping, making sure not to save the ra, and going to t0
-
 // Note: This ret line immediately returns from whence we came.  This
-//	is here as a placeholder so that you don't crash your O/S when
-//	you call ctxsw() before it is complete.  But, this line of code
-//	is not actually a part of a completed solution.
+//	 is here as a placeholder so that you don't crash your O/S when
+//	 you call ctxsw() before it is complete.  But, this line of code
+//	 is not actually a part of a completed solution.
 	ret
 
 // ASSIGNMENT 5 TODO:
