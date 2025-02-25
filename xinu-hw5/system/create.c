@@ -11,7 +11,6 @@
  */
 
 #include <xinu.h>
-#include <proc.h>
 
 static pid_typ newpid(void);
 void userret(void);
@@ -52,7 +51,7 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	
     // TODO: Setup PCB entry for new process.
     ppcb->state = PRREADY;   
-    ppcb->stkbase = (void *)((ulong)saddr);   // Stack base
+    ppcb->stkbase = saddr;   // Stack base
     ppcb->stklen = ssize;    // Stack size
     strncpy(ppcb->name, name, PNMLEN);       // Assign name
 
@@ -75,26 +74,25 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     }
 
     // TODO: Initialize process context.
-    ppcb -> ctx[CTX_PC] = (ulong)funcaddr; // Sets PC to the function's address
     ppcb -> ctx[CTX_RA] = (ulong)userret;
     ppcb -> ctx[CTX_SP] = (ulong)saddr; // Sets SP to stack adress
-
+    ppcb -> ctx[CTX_PC] = (ulong)funcaddr; // Sets PC to the function's address
     
     // TODO:  Place arguments into context and/or activation record.
     //        See K&R 7.3 for example using va_start, va_arg and
     //        va_end macros for variable argument functions.
     va_start(ap, nargs);
     // Store first 8 args in a0-a7 regs
-    for(i=0; i < nargs && i < 8; i++){
-            ppcb -> ctx[CTX_A0 + i] = va_arg(ap, ulong);
-    }
-    // Store rest in stack
-    for(; i < nargs; i++){
-            *--saddr = va_arg(ap, ulong);
+    for(i=0; i < nargs; i++){
+            if(i < 8){
+		    ppcb -> ctx[i] = va_arg(ap, ulong);
+	    }
+	    // Store rest in stack
+	    else {
+		    saddr++[i-8] = va_arg(ap, ulong);
+	    }
     }
     va_end(ap);
-
-
     return pid;
 }
 

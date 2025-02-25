@@ -53,19 +53,18 @@ ctxsw:
 
 
         //important here because after the first 7 arguments are used, you'll utilize the s-registers (s0, s1, s2...)
-        sd s0,  (CTX_S0*8)(t0)  //Save s0
-        sd s1,  (CTX_S1*8)(t0)  // Saving s1
-        sd s2,  (CTX_S2*8)(t0)  // s2 'argument' same process throughout
-        sd s3,  (CTX_S3*8)(t0)
-        sd s4,  (CTX_S4*8)(t0)
-        sd s5,  (CTX_S5*8)(t0)
-        sd s6,  (CTX_S6*8)(t0)
-        sd s7,  (CTX_S7*8)(t0)
-        sd s8,  (CTX_S8*8)(t0)
-        sd s9,  (CTX_S9*8)(t0)
-        sd s10, (CTX_S10*8)(t0)
-        sd s11, (CTX_S11*8)(t0)
-
+        sd s0,  (CTX_S0*8)(a0)  //Save s0
+        sd s1,  (CTX_S1*8)(a0)  // Saving s1
+        sd s2,  (CTX_S2*8)(a0)  // s2 'argument' same process throughout
+        sd s3,  (CTX_S3*8)(a0)
+        sd s4,  (CTX_S4*8)(a0)
+        sd s5,  (CTX_S5*8)(a0)
+        sd s6,  (CTX_S6*8)(a0)
+        sd s7,  (CTX_S7*8)(a0)
+        sd s8,  (CTX_S8*8)(a0)
+        sd s9,  (CTX_S9*8)(a0)
+        sd s10, (CTX_S10*8)(a0)
+        sd s11, (CTX_S11*8)(a0)
 
 // TODO: Switch from old process stack to new process stack.
 	ld sp,  CTX_SP*8(t1)    // Load new process stack pointer
@@ -74,7 +73,7 @@ ctxsw:
 //	 callee-save ("non-volatile") registers.
 //	 These call and restore segments must match the register data
 //	 layout you choose in create().
-    	ld a0,  (CTX_A0*8)(t1) //
+    	ld a0,  (CTX_A0*8)(a1) //
         ld a1,  (CTX_A1*8)(t1)
         ld a2,  (CTX_A2*8)(t1)
         ld a3,  (CTX_A3*8)(t1)
@@ -82,8 +81,9 @@ ctxsw:
         ld a5,  (CTX_A5*8)(t1)
         ld a6,  (CTX_A6*8)(t1)
         ld a7,  (CTX_A7*8)(t1)
-        ld ra,  (CTX_RA*8)(t1) //important because it lets the program know to continue after the context switch
-
+	
+        ld ra,  (CTX_RA*8)(t1) //important because it lets the program know to continue after the context switch	
+        
         ld s0,  (CTX_S0*8)(t1) //everything below is loading the
         ld s1,  (CTX_S1*8)(t1)
         ld s2,  (CTX_S2*8)(t1)
