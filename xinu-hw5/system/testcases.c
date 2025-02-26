@@ -2,10 +2,13 @@
  * @file testcases.c
  * @provides testcases
  *
- * TA-BOT:MAILTO
+ * @editors [Mackenna Bochnak Dayane Garcia-Avila]
+ * Instructor Dennis Brylow
+ * TA-BOT:MAILTO mackenna.bochnak@marquette.edu dayane.garcia-avila@marquette.edu
  *
  */
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
+
 
 #include <xinu.h>
 

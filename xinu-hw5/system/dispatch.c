@@ -1,12 +1,15 @@
 /**
  * @file dispatch.c
  * @provides dispatch
- *
+ * COSC3250 Assignment 5                                                     * @editors [MacKenna Bochnak and Dayane Garcia-Avila]
+ * Instructor [Dennis Brylow]
+ * TA-BOT:MAILTO mackenna.bochnak@marquette.edu dayane.garcia-avila@marquette.edu
  */
 /* Embedded XINU, Copyright (C) 2008, 2023.  All rights reserved. */
 
 
 #include <xinu.h>
+#include <interrupt.h> //needed found in the 'include' section within the project, needed in order to pass specific arguments.
 
 /**
  * @ingroup process
@@ -20,9 +23,9 @@
 void dispatch(ulong cause, ulong val, ulong *frame, ulong *program_counter) {
     ulong swi_opcode;
     
-    if((long)cause > 0) {
-        cause = cause << 1;
-        cause = cause >> 1;
+    if((long)cause > 0) {    //the if-statement is to check to see if 'cause' is a positive value.
+        cause = cause << 1;  //left shift
+        cause = cause >> 1;  //then a right shift, Clears the most signifficant bit, after the shifting, cause is not utilizing the exception code.
 
        /**
 	* TODO:
@@ -34,6 +37,19 @@ void dispatch(ulong cause, ulong val, ulong *frame, ulong *program_counter) {
 	*
 	* If the trap is not an environment call from U-Mode call xtrap
 	*/
+	//needed if statement, that will allow for
+        if (cause == E_ENVCALL_FROM_UMODE) {  //checking to see if cause is equal to to the enviromental
+                swi_opcode = *(frame + 7);
+
+                *frame = syscall_dispatch(swi_opcode, frame); //getting back the system call number,
+
+                set_sepc((ulong)program_counter + 4);
+        }
+
+        //else statement, if the trap is not a system
+        else {
+                xtrap(frame, cause, val, program_counter);
+        }
     }
 }
 
