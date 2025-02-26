@@ -102,7 +102,8 @@ void testcases(void)
     case '0':
         // Process creation testcase
         pid = create((void *)testmain, INITSTK, "MAIN1", 2, 0, NULL);
-        printpcb(pid);
+	printpcb(pid);
+	ready(pid, RESCHED_YES);
         break;
 
     case '1':
@@ -114,7 +115,7 @@ void testcases(void)
                      0x13131313, 0x14141414, 0x15151515, 0x16161616);
         printpcb(pid);
         // TODO: print out stack with extra args
-        // TODO: ready(pid, RESCHED_YES);
+        ready(pid, RESCHED_YES);
         break;
 
     case '2':
@@ -125,7 +126,7 @@ void testcases(void)
               RESCHED_NO);
         ready(create((void *)testmain, INITSTK, "MAIN3", 2, 0, NULL),
               RESCHED_YES);
-        break;
+	break;
 
     default:
         break;

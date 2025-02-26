@@ -11,7 +11,10 @@
  */
 
 #include <xinu.h>
-#include <proc.h>
+#include <stdarg.h>
+#include <string.h>
+
+#define ARG_REG_MAX 8
 
 static pid_typ newpid(void);
 void userret(void);
@@ -52,9 +55,10 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	
     // TODO: Setup PCB entry for new process.
     ppcb->state = PRREADY;   
-    ppcb->stkbase = (void *)((ulong)saddr);   // Stack base
-    ppcb->stklen = ssize;    // Stack size
-    strncpy(ppcb->name, name, PNMLEN);       // Assign name
+    ppcb->stkbase = (ulong*)saddr;     // Stack base
+    ppcb->stklen = ssize;              // Stack size
+    //strncpy(ppcb->name, name, PNMLEN); // Assign name
+    ppcb -> name[PNMLEN - 1] = '\0';
 
     // Initialize stack with accounting block
     *saddr = STACKMAGIC;
@@ -63,9 +67,9 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     *--saddr = (ulong)ppcb->stkbase;
 
     /* Handle variable number of arguments passed to starting function   */
-    if (nargs)
+    if (nargs > ARG_REG_MAX)
     {
-        pads = ((nargs - 1) / ARG_REG_MAX) * ARG_REG_MAX;
+        pads = ((nargs - ARG_REG_MAX - 1) / ARG_REG_MAX) * ARG_REG_MAX;
     }
     /* If more than 8 args, pad record size to multiple of native memory */
     /*  transfer size.  Reserve space for extra args                     */
@@ -75,26 +79,28 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     }
 
     // TODO: Initialize process context.
+    for (i = 0; i < CONTEXT; i++){
+	    ppcb -> ctx[i] = 0;
+    }
+    
+    ppcb -> ctx[CTX_RA] = (ulong)userret;  // Sets RA to userret
     ppcb -> ctx[CTX_PC] = (ulong)funcaddr; // Sets PC to the function's address
-    ppcb -> ctx[CTX_RA] = (ulong)userret;
-    ppcb -> ctx[CTX_SP] = (ulong)saddr; // Sets SP to stack adress
-
     
     // TODO:  Place arguments into context and/or activation record.
     //        See K&R 7.3 for example using va_start, va_arg and
     //        va_end macros for variable argument functions.
     va_start(ap, nargs);
     // Store first 8 args in a0-a7 regs
-    for(i=0; i < nargs && i < 8; i++){
-            ppcb -> ctx[CTX_A0 + i] = va_arg(ap, ulong);
+    for(i=0; i < nargs && i < ARG_REG_MAX; i++){
+	    ppcb -> ctx[CTX_A0 + i] = va_arg(ap, ulong);
     }
-    // Store rest in stack
-    for(; i < nargs; i++){
-            *--saddr = va_arg(ap, ulong);
+
+    for(i = nargs; i > ARG_REG_MAX; i--){
+	    *++saddr = va_arg(ap, ulong);
     }
     va_end(ap);
 
-
+    ppcb -> ctx[CTX_SP] = (ulong)saddr; // Sets SP to stack address
     return pid;
 }
 

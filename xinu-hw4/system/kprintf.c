@@ -23,7 +23,7 @@ syscall kgetc()
     }
     
     //       Otherwise, check UART line status register for available data
-    while (!(regptr->lsr & 0x01));  // Wait until data is available (LSR bit 0)
+    while (!(regptr->lsr & UART_LSR_DR));  // Wait until data is available (LSR bit 0)
     
     //       once there is data ready, get character c.
     return regptr->rbr;
@@ -43,7 +43,7 @@ syscall kcheckc(void)
 	    return TRUE;  // There is a character available in the buffer
     }
 
-    if (regptr->lsr & 0x01) {  // LSR bit 0 set means data is ready
+    if (regptr->lsr & UART_LSR_DR) {  // LSR bit 0 set means data is ready
         return TRUE;
     }
 
@@ -72,7 +72,7 @@ syscall kputc(uchar c)
     regptr = (struct ns16550_uart_csreg *)UART_BASE;
 
     // TODO: Check UART line status register.
-    while(!(regptr->lsr & 0x20)); // wait for transmitter holding register to be empty
+    while(!(regptr->lsr & UART_LSR_THRE)); // wait for transmitter holding register to be empty
 
     //       Once the Transmitter FIFO is empty, send character c.
     regptr->thr = c; // send the character
