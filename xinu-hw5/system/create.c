@@ -57,8 +57,8 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     ppcb->state = PRREADY;   
     ppcb->stkbase = (ulong*)saddr;     // Stack base
     ppcb->stklen = ssize;              // Stack size
-    //strncpy(ppcb->name, name, PNMLEN); // Assign name
-    ppcb -> name[PNMLEN - 1] = '\0';
+    strncpy(ppcb->name, name, PNMLEN); // Assign name
+    //ppcb -> name[PNMLEN - 1] = '\0';
 
     // Initialize stack with accounting block
     *saddr = STACKMAGIC;
@@ -131,6 +131,6 @@ void userret(void)
 {
     // ASSIGNMENT 5 TODO: Replace the call to kill(); with user_kill();
     // when you believe your trap handler is working in Assignment 5
-    // user_kill();
-    kill(currpid); 
+     user_kill();
+    //kill(currpid); 
 }

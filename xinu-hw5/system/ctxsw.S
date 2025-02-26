@@ -121,13 +121,13 @@ ctxsw:
 //      until you believe your trap handler is working.
 // Determine which privilege mode the process should be in
 //	ld t0, (**REGISTER THAT HOLDS NEW CONTEXT PROGRAM COUNTER**)
-//	beq t0, ra, switch
-//	li t4, SSTATUS_S_MODE
-//	csrc sstatus, t4
-//	csrw sepc, t0
+	beq t0, ra, switch
+	li t4, SSTATUS_S_MODE
+	csrc sstatus, t4
+	csrw sepc, t0
 //
-//	sret
-//switch:
-//	ret
+	sret
+switch:
+	ret
 
 	.end ctxsw
